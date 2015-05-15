@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0"
+	xmlns:android="http://schemas.android.com/apk/res/android" id="me.hybride.hybridehart"
+	version="1.0.0">
+
+	<gap:config-file platform="android" parent="/manifest">
+		<application android:debuggable="true" />
+	</gap:config-file>
+
+	<name>hybride.hart</name>
+
+	<description>An android application simulating a heartbeat. The
+		heartbeat reacts on changes in the wifi landscape.
+	</description>
+
+	<author href="hybride.me/ns" email="teis@teis.me">Teis De Greve</author>
+
+	<content src="index.html" />
+
+	<access origin="*" />
+	
+	<platform name="android">
+              <icon src="res/icon/cordova_android_48.png" density="ldpi" />
+              <icon src="res/icon/cordova_android_72.png" density="mdpi" />
+              <icon src="res/icon/cordova_android_96.png" density="hdpi" />
+              <icon src="res/icon/cordova_android_144.png" density="xhdpi" />
+     </platform>
+
+	<preference name="webviewbounce" value="true" />
+
+	<feature name="App">
+		<param name="android-package" value="org.apache.cordova.App" />
+	</feature>
+	<feature name="Vibration">
+		<param name="android-package" value="org.apache.cordova.vibration.Vibration" />
+		<param name="ios-package" value="CDVVibration" />
+
+		<param name="id" value="org.apache.cordova.vibration" />
+	</feature>
+	<feature name="WifiWizard">
+		<param name="android-package" value="com.pylonproducts.wifiwizard.WifiWizard" />
+		<param name="onload" value="true" />
+
+
+		<param name="id" value="com.pylonproducts.wifiwizard" />
+	</feature>
+	<feature name="WifiScanner">
+		<param name="android-package" value="nl.nielsad.cordova.wifiscanner.WifiListener" />
+
+
+		<param name="id" value="nl.nielsad.cordova.wifiscanner" />
+	</feature>
+	<feature name="Notification">
+		<param name="android-package" value="org.apache.cordova.dialogs.Notification" />
+		<param name="ios-package" value="CDVNotification" />
+
+		<param name="id" value="org.apache.cordova.dialogs" />
+	</feature>
+	<feature name="Insomnia">
+		<param name="android-package" value="nl.xservices.plugins.Insomnia" />
+		<param name="ios-package" value="Insomnia" />
+	</feature>
+	<feature name="Insomnia (prevent screen sleep)">
+		<param name="id" value="nl.x-services.plugins.insomnia" />
+		<param name="url"
+			value="https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin" />
+	</feature>
+	
+
+
+</widget>
