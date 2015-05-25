@@ -1,18 +1,7 @@
-var mode = {
-	ABSOLUTE: "absolute",
-	ABSOLUTE_WITH_SPEED: "absolute_with_speed",
-	RELATIVE: "relative"
-}
-
 var app = {
 	mode: null,
     initialize: function() {
         this.bindEvents();
-        if($('.withspeed').is(':checked')){
-        	app.mode = mode.ABSOLUTE_WITH_SPEED;
-        } else{
-        	app.mode = mode.ABSOLUTE;
-        }
     },
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
@@ -48,12 +37,10 @@ var app = {
     			});
     		}
     	}
-    	$(".withspeed").change(function() {
-    	    if(this.checked) {
-    	        app.mode = mode.ABSOLUTE_WITH_SPEED;
-    	    } else{
-    	    	app.mode = mode.ABSOLUTE;
-    	    }
+    	wifi.sensitivity = $(".sensitivity").val();
+    	$(".sensitivity").change(function() {
+    	    wifi.sensitivity = $(this).val();
+    	    $(".sensitivity_value").html(wifi.sensitivity);
     	});
     	$(".status").on("touchend", function(){
     		$(".content").toggle();
@@ -85,6 +72,7 @@ var app = {
 var wifi = {
 	scanning: false,
 	previous: 0,
+	sensitivity: 0,
 	steady: 0,
 	start: function(){
 		if(!wifi.scanning){
@@ -105,55 +93,32 @@ var wifi = {
 			var q = Object.size(data);
 			var diff = Math.abs(q - wifi.previous);
 	
-			switch(app.mode){
-			case mode.ABSOLUTE:
-				// stable
-				if(q - wifi.previous == 0){
-					if(heartbeat.rate.target > 60){
-						heartbeat.rate.speed = 2;
-						var target = heartbeat.rate.target -= 10 + 10 * wifi.steady;
-						if(target < 60){
-							heartbeat.rate.target = 60;
-						} else{
-							heartbeat.rate.target = target;
-						}
-					}
-					wifi.steady++;
-				// change
-				} else{
-					if(heartbeat.rate.target < 180){
-						heartbeat.rate.speed = 2;
-						var target = heartbeat.rate.target + diff * 5;
-						if(target > 180){
-							heartbeat.rate.target = 180;
-						} else{
-							heartbeat.rate.target = target;
-						}
-					}
-					wifi.steady = 0;
-				}
-				break;
-			// deprecated
-			case mode.ABSOLUTE_WITH_SPEED:
-				if(q - wifi.previous == 0){
-					heartbeat.rate.speed = 2;
-					if(heartbeat.rate.target > 60){
-						if(heartbeat.rate.target >= 70){
-							heartbeat.rate.target -= 10;
-						} else{
-							heartbeat.rate.target = 60;
-						}
-					}
-				} else{
-					if(heartbeat.rate.target < 180){
-						heartbeat.rate.target += diff * 10;
-						heartbeat.rate.speed = diff * 2;
+			// mag het veranderen
+			// ja -> verhoog hartslag met 5
+			if(wifi.previous + wifi.previous/wifi.sensitivity <= q || wifi.previous - wifi.previous/wifi.sensitivity >= q){
+				if(heartbeat.rate.target < 180){
+					var target = heartbeat.rate.target + 10;
+					if(target > 180){
+						heartbeat.rate.target = 180;
+					} else{
+						heartbeat.rate.target = target;
 					}
 				}
-				break;
+				wifi.steady = 0;
+			// nee -> stabiliseer
+			} else{
+				if(heartbeat.rate.target > 60){
+					var target = heartbeat.rate.target - (5 + 5 * wifi.steady);
+					if(target < 60){
+						heartbeat.rate.target = 60;
+					} else{
+						heartbeat.rate.target = target;
+					}
+				}
+				wifi.steady++;
 			}
 			
-			$(".w").html("mode: "+ app.mode + "<br />#: " + q + "<br />∆: " + Math.abs(q - wifi.previous) + "<br />steady: " + wifi.steady);
+			$(".w").html("#: " + q + "<br />∆: " + Math.abs(q - wifi.previous) + "<br />steady: " + wifi.steady);
 			wifi.previous = q;
 			
 			if(wifi.scanning){
@@ -206,15 +171,9 @@ var heartbeat = {
 		}
 	},
 	change: function(){
-		if(heartbeat.rate.current < heartbeat.rate.target - 0.1){ // if it's lower than the target rate: go up (-0.1 to stabelize in the end)
-			if(heartbeat.rate.current + heartbeat.rate.speed > heartbeat.rate.target){// if it's getting close to the ceiling, go a little bit slower
-				heartbeat.rate.speed /= 2;
-			}
+		if(heartbeat.rate.current <= heartbeat.rate.target - heartbeat.rate.speed){ // if it's lower than the target rate: go up
 			heartbeat.rate.current += heartbeat.rate.speed;
-		} else if(heartbeat.rate.current > heartbeat.rate.target + 0.1){ // if it's higher, get down
-			if(heartbeat.rate.current - heartbeat.rate.speed < heartbeat.rate.target){// if it's getting close to the bottom, go a little bit slower
-				heartbeat.rate.speed /= 2;
-			}
+		} else if(heartbeat.rate.current >= heartbeat.rate.target + heartbeat.rate.speed){ // if it's higher, get down
 			heartbeat.rate.current -= heartbeat.rate.speed;
 		}
 	}
